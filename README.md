@@ -10,4 +10,5 @@ Opçoes de ações do lacre para o computador
 
 Histórico das alterações do lacre
 
-![Capturar-3](https://user-images.githubusercontent.com/3485511/190216129-fbe6cefd-e34c-462a-8867-203c95bc9592.PNG)
+
+![Capturar-3_LI (3)](https://user-images.githubusercontent.com/3485511/190216744-bbbfb202-dd62-4047-9f7a-99922bb9cc10.jpg)
