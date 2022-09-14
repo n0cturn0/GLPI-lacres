@@ -1,5 +1,38 @@
 <?php
+/**
+ * ---------------------------------------------------------------------
+ * GLPI - Gestionnaire Libre de Parc Informatique
+ * Copyright (C) 2015-2017 Teclib' and contributors.
+ *
+ * http://glpi-project.org
+ *
+ * based on GLPI - Gestionnaire Libre de Parc Informatique
+ * Copyright (C) 2003-2014 by the INDEPNET Development Team.
+ *
+ * ---------------------------------------------------------------------
+ *
+ * LICENSE
+ *
+ * This file is part of GLPI.
+ *
+ * GLPI is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * GLPI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+ * ---------------------------------------------------------------------
+ */
 
+/** @file
+* @brief
+*/
 
 use Glpi\Event;
 
@@ -39,7 +72,59 @@ if (isset($_POST["add"])) {
    Html::back();
 
 } else if (isset($_POST['update'])) {
+  
    $track->check($_POST['id'], UPDATE);
+   $coringa = $_POST['items_id']['Computer'];
+   $id_ticket = $_POST['id'];
+   $result = $DB->query("SELECT * FROM glpi_computer_lacre_hystori WHERE  id_ticket='$id_ticket'");
+   $cont = ($result->num_rows);
+   
+  
+   
+  
+   if(!empty($coringa)){
+      #Se nao for vazio aplica-se as regras de validação
+         switch ($cont) {
+            case 0:
+               if ($_POST['status'] == 6 || $_POST['status'] == 5) {
+                  $mandatory_missing["local_instalacao_id"] = 'Valide os lacres'; 
+             
+                 
+               if (count($mandatory_missing)) {
+                  //TRANS: %s are the fields concerned
+                  $message = sprintf(__('Mandatory fields are not filled. Please correct: %s'),
+                                     implode(", ", $mandatory_missing));
+                  Session::addMessageAfterRedirect($message, false, ERROR);
+                  Html::redirect($CFG_GLPI["root_doc"]."/front/ticket.form.php?id=".$_POST["id"]);
+                 
+               }
+               }
+               break;
+            case 1:
+               $track->update($_POST);
+               break;
+            case 2:
+               $track->update($_POST);
+               break;
+            default:
+               # code...
+               break;
+         }
+
+    
+      
+   } else {
+
+
+      #Sem regras de lacre
+      
+   }
+
+
+
+
+
+
 
    $track->update($_POST);
    $regraDGSIS = ($_POST['status'] == 6 && ($_POST['itilcategories_id'] == ConfigGlobal::$CATALOGO_INFRA_PUBLICACAO[0] || $_POST['itilcategories_id'] == ConfigGlobal::$CATALOGO_INFRA_PUBLICACAO[1])); // Regra para alteração dos status das mudanças vinculado no chamado de publicação (DGSIS)

@@ -28,135 +28,290 @@ include ("../../../inc/includes.php");
    echo "<form action='".$CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php' method='post'>";
      ?>
     <table class="tab_cadre_fixehov">
-        <tbody>
-         <?php  for ($i=0; $i < $contador; $i++) { 
+      <tbody>
+      <?php  
+         $numero_lacre = '';
+         for ($i=0; $i < $contador; $i++) { 
                foreach ($data as  $value) {
+                 
+                  $consulta_lacre = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = ".$value[$i]);
+                  if($consulta_lacre->num_rows>0){
+                     foreach($consulta_lacre as $t){
+                        $numero_lacre = $t['lacre_number'];
+                     }
+                  }
          ?>
         <tr class="noHover">
             <th colspan="8">
                   <label>Id do computador:  </label>
-                   <input type="text" name="id_computador[]" value="<?php echo  $value[$i]; ?>"> 
+                   <input type="text" readonly name="id_computador[]" value="<?php echo  $value[$i]; ?>"> 
             </th>
             <th colspan="8">
                   <label>Número do lacre:  </label>
-                   <input type="text" name="numero_lacre[]" value=""> 
+                   <input type="text" required name="numero_lacre[]" value="<?php echo $numero_lacre;?>"> 
             </th>
         </tr>
-               <?php 
-               } 
-            }
-               ?>
+      <?php  } } ?>
         <tr class="noHover">
-        <th colspan="8">
+        <th colspan="16">
             <input type="hidden" name="ticke_id" value="<?=$ticket_id?>">
-        <input type="submit" value="Cadastrar Lacre" name="cadastro" class="submit">
+         <?php 
+            if(!empty($numero_lacre)){
+            ?>
+            <input type="submit" value="ValidarLacre" name="validar" class="submit">
+            <input type="submit" value="Alterar Lacre" name="alterar" class="submit">
+         <?php 
+            }else{
+            ?>
+            <input type="submit" value="Cadastrar Lacre" name="cadastro" class="submit">
+         <?php 
+            }
+            ?>
         </th>
     </tr>
         </tbody>
         </table>
    </form>
    <?php
-    if (isset($_POST["cadastro"])) {
-   $username =  $_SESSION['glpiname'];
-   $userid = $_SESSION['glpiID'];
-   $id_ticket = $_POST['ticke_id'];
-   $today = date("Y-m-d H:i:s");  
-   /* 
-      Id de status
-      0 - Sem lacre
-      1 - Alterado via plugin via tela de chamado
-      10 - Alterado via plugin via tela de ativo
-   */
-  
-
-   foreach($_POST['id_computador'] as $key => $v){ $computador[$key] = $v;}  
-   foreach ($_POST['numero_lacre'] as $key => $v){ $lacre[$key] = $v; }
-   $data = array_combine($computador, $lacre);
-   //Verifica se ja está com lacre cadastrado
-   foreach ($data as $key => $value) {
-   $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = $key");
-   }
-   $cont = ($result->num_rows);
-      if ($cont == 0) { 
-        //Incio do lacre
-        foreach ($data as $key => $value) {
-         $insere_lacre = "
-      INSERT INTO glpi_computers_lacre SET
-      computer_id = '$key',
-      status = 1,
-      nlacre ='$value',
-      id_ticket = $id_ticket
-      ";
-
-      $hystori = "
-         INSERT INTO glpi_computer_lacre_hystori SET
-         computer_id = '$key',
-         lacre_number = '$value',
-         status = 1,
-         username = '$username',
-         user_id_alter = '$userid',
-         data_alteracao = '$today'
-         ";
+   if (isset($_POST["cadastro"]) || isset($_POST["validar"]) || isset($_POST["alterar"])) {
+      $username =  $_SESSION['glpiname'];
+      $userid = $_SESSION['glpiID'];
+      $id_ticket = $_POST['ticke_id'];
+      $today = date("Y-m-d H:i:s");  
+      /* 
+         Id de status
+         0 - Sem lacre
+         1 - Primeiro lacre
+         2 - Validado lacre (lacre ja existente)
+         3 - Lacre alterado
+      */
+      foreach($_POST['id_computador'] as $key => $v){ $computador[$key] = $v;}  
+      foreach ($_POST['numero_lacre'] as $key => $v){ $lacre[$key] = $v; }
+      $data = array_combine($computador, $lacre);
+      $validata = array_combine($computador, $lacre);
+      //Verifica se ja está com lacre cadastrado pelo id do computador
+      $la = 1234567;
+      foreach ($data as $key => $value) {
+      $number_lacre[] = intval($value);
+      $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = $key and status=1");
+      }
+      $cont = ($result->num_rows);
+      foreach ($number_lacre as $key => $la) {
+       $lacre  = $DB->query("select * from glpi_computer_lacre_hystori where (lacre_number = $la)
+       or (lacre_number = $la and status=1)
+       or (lacre_number = $la and status=2)
+       or (lacre_number = $la and status=3)");
+      }
+      $lacretotal = ($lacre->num_rows);
+      
+      
+      /*Cadastrar lacre*/
+      if(isset($_POST["cadastro"])){
          
-         if( $DB->query($hystori) && $DB->query($insere_lacre)){
+
+        
+
+
+
+
+         
+        
+       
+         if ($cont == 0) { 
+            //Incio do lacre
+            foreach ($data as $key => $value) {
+               if ( !is_numeric($value) ) {
+                 
+               
+                  $lacre_missing["digito"] = 'O número do lacre deve conter apenas números';
+                  $message = sprintf(__('Por favor corrija: %s'),
+                  implode(", ", $lacre_missing));
+                  Session::addMessageAfterRedirect($message, false, ERROR);
+                  Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
+                 
+              } elseif (strlen($value) != 7 ) {
+                  # igual a sete
+                  $lacre_missing["digito"] = 'O número do lacre deve conter 7 númerais';
+                  $message = sprintf(__('Por favor corrija: %s'),
+                  implode(", ", $lacre_missing));
+                  Session::addMessageAfterRedirect($message, false, ERROR);
+                  Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
+                  
+              } else {
+               if ($lacretotal == 0 ) {
+                  #root
+                  $insere_lacre = "
+                  INSERT INTO glpi_computers_lacre SET
+                  computer_id = '$key',
+                  status = 1,
+                  nlacre ='$value',
+                  id_ticket = $id_ticket
+                  ";
+            
+                  $hystori = "
+                     INSERT INTO glpi_computer_lacre_hystori SET
+                     computer_id = '$key',
+                     lacre_number = '$value',
+                     status = 1,
+                     id_ticket = $id_ticket,
+                     username = '$username',
+                     user_id_alter = '$userid',
+                     data_alteracao = '$today'
+                     ";
+                     $DB->query($hystori);
+                     $DB->query($insere_lacre);
+                } else {
+                 
+                  $lacre_missing["digito"] = 'Esse número de lacre já foi usado!';
+                  $message = sprintf(__('Por favor corrija: %s'),
+                  implode(", ", $lacre_missing));
+                  Session::addMessageAfterRedirect($message, false, ERROR);
+                  Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
+
+
+                }
+                  
+              }
+               
+            }
+         }
+         Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");
+         //Fim do lacre
+      } 
+      /*Validar Lacre*/
+      else if(isset($_POST["validar"])){
+         if ($cont > 0) { 
+            foreach($result as $registro_atual){
+               $verifica_lacre = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = '$key' AND lacre_number = '$value'");
+               $cont_lacre = ($verifica_lacre->num_rows);
+               if ($cont_lacre > 0) {
+                  $hystori = "
+                        UPDATE glpi_computer_lacre_hystori 
+                        SET status = 2,
+                        computer_id = '$key',
+                        username = '$username',
+                        user_id_alter = '$userid',
+                        data_alteracao = '$today' ,
+                        id_ticket = $id_ticket,
+                        WHERE id=".$registro_atual['id'];
+                  $DB->query($hystori);
+                  $DB->query($atualiza_lacre);
+                  $hystori = "
+                     INSERT INTO glpi_computer_lacre_hystori SET
+                     computer_id = '$key',
+                     lacre_number = '$value',
+                     status = 2,
+                     username = '$username',
+                     id_ticket = $id_ticket,
+                     user_id_alter = '$userid',
+                     data_alteracao = '$today'
+                     ";
+                     $DB->query($hystori);
+                     $DB->query($insere_lacre);
+               }else{
+                  $lacre_missing["nostring"] = 'Lacre diferente do cadastrado';
+                  $message = sprintf(__('Por favor corrija: %s'),
+                  implode(", ", $lacre_missing));
+                  Session::addMessageAfterRedirect($message, false, ERROR);
+                  Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
+               }
+            }
+            
+         }
+        // Html::redirect("{$CFG_GLPI['root_doc']}/front/computer.form.php?id=$key");
+        Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");
+         
+      }
+      else if(isset($_POST["alterar"])){
+         if ($cont > 0) { 
+            $verifica_lacre = $DB->query("select * from glpi_computer_lacre_hystori where lacre_number = '$value'");
+            $cont_lacre = ($verifica_lacre->num_rows);
+            if ($cont_lacre == 0) { 
+               foreach($result as $registro_atual){
+                  $hystori = "
+                        UPDATE glpi_computer_lacre_hystori 
+                        SET status = 3,
+                        computer_id = 909090909,
+                        username = '$username',
+                        user_id_alter = '$userid',
+                        data_alteracao = '$today' ,
+                        WHERE id=".$registro_atual['id'];
+                      
+                  $hystori = "
+                     INSERT INTO glpi_computer_lacre_hystori SET
+                     computer_id = '$key',
+                     lacre_number = '$value',
+                     status = 3,
+                     username = '$username',
+                     user_id_alter = '$userid',
+                     id_ticket = $id_ticket,
+                     data_alteracao = '$today'
+                     ";
+                     $DB->query($hystori);
+                     $DB->query($insere_lacre);
+               }
+            }else{
+               
+               $lacre_missing["nostring"] = 'Esse lacre já existe';
+               $message = sprintf(__('Por favor corrija: %s'),
+               implode(", ", $lacre_missing));
+               Session::addMessageAfterRedirect($message, false, ERROR);
+               Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
+            }
             Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");
          }
+      
          
       }
-        //Fim do lacre
-        
-      } else {
-         Html::redirect("{$CFG_GLPI['root_doc']}/front/computer.form.php?id=$key");
-         
-         // echo 'Ja existe uma lacre';
-         // exit();
-      }
-
     
 
                   
                                
     }
 
-    if (isset($_POST["cadastrosemticket"])) {
-      $id_computador = ($_POST['idcomputador']);
-      $lacre = ($_POST['lacrenumber']);
-      $username =  $_SESSION['glpiname'];
-      $userid = $_SESSION['glpiID'];
-      $today = date("Y-m-d H:i:s");
+   //  if (isset($_POST["cadastrosemticket"])) {
+   //    $id_computador = ($_POST['idcomputador']);
+   //    $lacre = ($_POST['lacrenumber']);
+   //    $username =  $_SESSION['glpiname'];
+   //    $userid = $_SESSION['glpiID'];
+   //    $today = date("Y-m-d H:i:s");
 
-      $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = $id_computador");
-      $cont = ($result->num_rows);
+   //    $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id =$id_computador");
+   //    $cont = ($result->num_rows);
        
-         /* 
-      Id de status
-      0 - Sem lacre
-      1 - Alterado via plugin via tela de chamado
-      10 - Alterado via plugin via tela de ativo
-      */
-      $insere_lacre = "
-                  INSERT INTO glpi_computers_lacre SET
-                  computer_id = '$id_computador',
-                  status = 10,
-                  nlacre ='$lacre',
-                  id_ticket = ''
-                  ";
-      $hystori = "
-                  INSERT INTO glpi_computer_lacre_hystori SET
-                  computer_id = '$id_computador',
-                  lacre_number = '$lacre',
-                  status = 10,
-                  username = '$username',
-                  user_id_alter = '$userid',
-                  data_alteracao = '$today'
-                  ";
-                  if($DB->query($hystori) && $DB->query($insere_lacre) ){
-                     Html::redirect("{$CFG_GLPI['root_doc']}/front/computer.php");
-                  }
+   //       /* 
+   //    Id de status
+   //    0 - Sem lacre
+   //    1 - Alterado via plugin via tela de chamado
+   //    10 - Alterado via plugin via tela de ativo
+   //    */
+   //    $insere_lacre = "
+   //                INSERT INTO glpi_computers_lacre SET
+   //                computer_id = '$id_computador',
+   //                status = 10,
+   //                nlacre ='$lacre',
+   //                id_ticket = ''
+   //                ";
+   //    $hystori = "
+   //                INSERT INTO glpi_computer_lacre_hystori SET
+   //                computer_id = '$id_computador',
+   //                lacre_number = '$lacre',
+   //                status = 10,
+   //                username = '$username',
+   //                user_id_alter = '$userid',
+   //                data_alteracao = '$today'
+   //                ";
+   //                $DB->query($hystori);
+   //                $DB->query($insere_lacre);
+   //                Html::redirect("{$CFG_GLPI['root_doc']}/front/computer.form.php?id=$id_computador");
+   //                // if($DB->query($hystori) && $DB->query($insere_lacre) ){
+   //                //    echo $id_computador;
+   //                //   // Html::redirect("{$CFG_GLPI['root_doc']}/front/computer.form.php?id=$id_computador");
+   //                // }
                  
       
       
-    }
+   //  }
 
 
 

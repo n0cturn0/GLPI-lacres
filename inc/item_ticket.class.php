@@ -1,5 +1,38 @@
 <?php
+/**
+ * ---------------------------------------------------------------------
+ * GLPI - Gestionnaire Libre de Parc Informatique
+ * Copyright (C) 2015-2017 Teclib' and contributors.
+ *
+ * http://glpi-project.org
+ *
+ * based on GLPI - Gestionnaire Libre de Parc Informatique
+ * Copyright (C) 2003-2014 by the INDEPNET Development Team.
+ *
+ * ---------------------------------------------------------------------
+ *
+ * LICENSE
+ *
+ * This file is part of GLPI.
+ *
+ * GLPI is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * GLPI is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GLPI. If not, see <http://www.gnu.org/licenses/>.
+ * ---------------------------------------------------------------------
+ */
 
+/** @file
+* @brief
+*/
 
 if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
@@ -47,8 +80,6 @@ class Item_Ticket extends CommonDBRelation{
    const HISTORY_UNLOCK_SUBITEM     = 25;
    const HISTORY_LOCK_ITEM          = 26;
    const HISTORY_UNLOCK_ITEM        = 27;
-  
-   
 
    /**
     * @since version 0.84
@@ -306,33 +337,91 @@ class Item_Ticket extends CommonDBRelation{
          }
          // CUSTOMIZAÇÃO CONEXÃO REMOTA
          if($count > 0){
-            global $DB, $CFG_GLPI;
-            $ticket = $ticket->fields['id'];
             echo "<br><a href='remote: ' class='vsubmit' style='margin-top: 10px;'>"._sx('button', 'Acesso remoto')."</a>";
-            if (empty($ticket)){
-
-            } else {
-               $result = $DB->query("SELECT * FROM glpi_computers_lacre WHERE  id_ticket='$ticket'");
-            $cont = ($result->num_rows);
-           // Rotina de Validação dos lacres para computador
-            if ($cont == 0 ) {
-                echo "<br><a href='".$CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$ticket."' class='vsubmit' style='margin-top: 10px;'>"._sx('button', 'L A C R E')."</a>";
-                echo '<br>';
-                echo "<p id='label_lacre'>Lacre(s) não validados</p><input id='validar_lacre' type='checkbox' required style='display:none'>";
-                  echo "<script type='text/javascript'>";
-                  echo "$(document).ready(function() { $('input[type=submit]').click(function(){";
-                  echo "if (!$('#validar_lacre').is(':checked')) {alert('Lacre nao validado');}";
-                  echo "});});</script>";
-            } else {
-               echo "<br>";
-               echo "<input type='checkbox' checked required>Lacre(s) validados";
-            }
-            }
-            
          }
+
+
+         global $DB, $CFG_GLPI;
+         //Se ticket for vazio
+         if (empty($ticket)){
+
+         
+          } else {
+         //Se conter ticket abre as regras
+          //Pega número do chamado
+         $ticket_id = $ticket->fields['id'];
+         //Verifica se existe item do tipo computador
+         $verifica_tipo = $DB->query("SELECT * FROM glpi_items_tickets WHERE  tickets_id='$ticket_id'");
+         //se exisitir
+         $contatipo = ($verifica_tipo->num_rows);
+         $camputadores=array();
+         if($contatipo >= 0){
+          foreach ($verifica_tipo as $key => $value) {
+            if($value['itemtype'] ==  'Computer'){
+               $computadores[] = $value['items_id'];
+            } 
+            
+          }
+          if (!empty($computadores)){
+           //computadores
+          $consultalacre = $DB->query("SELECT *  FROM glpi_computer_lacre_hystori WHERE  id_ticket='$ticket_id'"); 
+          $rowcount=($consultalacre->num_rows);
+         
+          //Se não encontrar lacres
+          if($rowcount == 0) {
+            
+            echo "<br><a href='".$CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$ticket_id."' class='vsubmit' style='margin-top: 10px;'>"._sx('button', 'L A C R E')."</a>";
+            echo '<br>';
+            echo "<p id='label_lacre'>Lacre(s) não validados</p><input id='validar_lacre' type='checkbox' style='display:none'>";
+         } else {
+            echo "<br>";
+            echo "<input type='checkbox' checked name='lacre' id='lacre'>$rowcount Lacre(s) validado(s)";
+            
+          } 
+          }
+          
+         
+
+
+
+         } else {
+            //Regra para quando não for do tipo computador
+            // echo '<';
+            // exit('Regra para quando não for do tipo computador');
+
+
+           
+
+            //FIM Regra para quando não for do tipo computador
+
+         }
+        
+         }
+         //Fim do Lacre
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+         
       }
 
-      
+      if ($count == 0) {
+         echo "<input type='hidden' value='0' name='items_id'>";
+      }
 
       if ($params['id'] > 0 && $usedcount != $count) {
          $count_notsaved = $count - $usedcount;

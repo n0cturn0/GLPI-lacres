@@ -36,36 +36,67 @@ class PluginPsglacreMaketab extends CommonDBTM
    {
     global $CFG_GLPI;
     global $DB;
+
     $computador = $item->getID();
     $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = $computador");
     $cont = ($result->num_rows);
-    //Verifica se o computador ja possui lacre
-    if ($cont == 0) { 
-        $msg_header = 'ESTE COMPUTADOR ESTÁ RECEBENDO LACRE PELA PRIMEIRA VEZ';
-       } else {
-        $msg_header = 'ESTE COMPUTADOR JÁ HAVIA SIDO LACRADO ANTES';
-        }
    
-    echo $msg_header;
-    echo "<form action='".$CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php' method='post'>";
-    echo '<table class="tab_cadre_fixehov">
-        <tbody>
-        <tr class="noHover">
-            <th colspan="8">
-                    <label>Id do computador:  </label> <input type="text" name="idcomputador" value="'.$computador.'">
-                    <label>Número do lacre:  </label> <input type="text" name="lacrenumber" value="" placeholder="digite o número do lacre">
-            </th>
+        echo '<br><br><hr>';
+        echo '<h2>Históricos das alterações do lacre deste dispositivo</h2>';
+        echo '<table class="tab_cadre_fixehov">';
+        if ($cont == 0) { 
+         echo '
+         <tbody>
+         <tr class="noHover">
+         <th colspan="8">';
+         echo 'Sem Registro de lacres para esse computador';  
+        echo '</th>
         </tr>
-        <tr class="noHover">
-        <th colspan="8">
-      
-        <input type="submit" value="Cadastrar Lacre" name="cadastrosemticket" class="submit">
-        </th>
+        
     </tr>
         </tbody>
-        </table>
-        </form>';
-   
+        </table>';
+
+        }  else {
+
+
+        
+        foreach ($result as $key => $value) 
+        {
+            switch ($value['status'] ) {
+                case 1:
+                    $msg = "Computador com o ID ". $value['computer_id']. "Foi LACRADO pela primeira vez, com o lacre número :"  . $value['lacre_number'] . "em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
+                    break;
+                case 2:
+                    $msg = "Computador com o ID ". $value['computer_id']. "Teve seu LACRE VALIDADO mantendo o número :"  . $value['lacre_number'] . "em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+                break;
+                case 3:
+                     $msg = "Computador com o ID ". $value['computer_id']. "Teve seu LACRE SUBSTITUÍDO pelo de  número :"  . $value['lacre_number'] . "em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+                    default:
+                
+                    # code...
+                    break;
+            }
+
+           
+            echo '
+        <tbody>
+        <tr class="noHover">
+            <th colspan="8">';
+            echo $msg;
+        }
+    }
+          echo  '</th>
+        </tr>
+        
+    </tr>
+        </tbody>
+        </table>';
+     
+      
+     
+      
+       
    }
    
  
