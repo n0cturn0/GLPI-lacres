@@ -2,8 +2,9 @@
 
 Tela principal de chamados
 
+![lacre-1_LI](https://user-images.githubusercontent.com/3485511/190216862-0e56486d-8a04-4b9a-bd68-d2e53d9adaf3.jpg)
 
-![lacre-1](https://user-images.githubusercontent.com/3485511/190215818-8e141eb7-b237-4c56-b016-a9f05b31cb91.PNG)
+
 
 Opçoes de ações do lacre para o computador
 ![Capturar-2](https://user-images.githubusercontent.com/3485511/190215941-e3ff6674-5f54-4063-b2c2-f00340ff9eff.PNG)
