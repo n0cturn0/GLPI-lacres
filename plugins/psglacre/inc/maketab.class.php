@@ -65,13 +65,13 @@ class PluginPsglacreMaketab extends CommonDBTM
         {
             switch ($value['status'] ) {
                 case 1:
-                    $msg = "Computador com o ID ". $value['computer_id']. "Foi LACRADO pela primeira vez, com o lacre número :"  . $value['lacre_number'] . "em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
+                    $msg = "Computador com o ID ". $value['computer_id']. " Foi LACRADO pela primeira vez, com o lacre número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
                     break;
                 case 2:
-                    $msg = "Computador com o ID ". $value['computer_id']. "Teve seu LACRE VALIDADO mantendo o número :"  . $value['lacre_number'] . "em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+                    $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE VALIDADO mantendo o número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
                 break;
                 case 3:
-                     $msg = "Computador com o ID ". $value['computer_id']. "Teve seu LACRE SUBSTITUÍDO pelo de  número :"  . $value['lacre_number'] . "em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+                     $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE SUBSTITUÍDO pelo de  número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
                     default:
                 
                     # code...

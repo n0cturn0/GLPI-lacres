@@ -51,18 +51,19 @@ include ("../../../inc/includes.php");
             ?>
             <th colspan="4">
                   
-                  <input id="validar_<?php echo $value[$i];?>" checked type="radio" name="acao_lacre[<?php echo  $value[$i]; ?>]" value="validar" class="acao_lacre">
+                  <input id="validar_<?php echo $value[$i];?>" checked type="radio" name="acao_lacre[<?php echo  $value[$i]; ?>]" value="validar" class="acao_lacre" >
                   <label for="validar_<?php echo $value[$i];?>">Validar</label>
                   <input id="alterar_<?php echo $value[$i];?>" type="radio" name="acao_lacre[<?php echo  $value[$i]; ?>]" value="alterar" class="acao_lacre">
                   <label for="alterar_<?php echo $value[$i];?>">Alterar</label>
             </th>
-         <?php 
+            <?php 
             }
             ?>
             <th colspan="<?php echo (!empty($numero_lacre))?'4':'8';?>">
                   <label>Número do lacre:  </label>
-                   <input type="text" required name="numero_lacre[]" value="<?php echo $numero_lacre;?>"  class="numero_lacre" <?php echo (!empty($numero_lacre))?' readonly="readonly" style="background-color: rgb(224, 224, 224);"':'';?>> 
-            </th>
+            <!-- <input type="text" required name="numero_lacre[]" value="<?php echo $numero_lacre;?>"  class="numero_lacre" <?php echo (!empty($numero_lacre))?' readonly="readonly" style="background-color: rgb(224, 224, 224);"':'';?>>  -->
+                 <input type="number" required="" minlength="7" maxlength="7"  name="numero_lacre[]"   value="<?php echo $numero_lacre;?>" class="numero_lacre"  <?php echo (!empty($numero_lacre))?' readonly="readonly" style="background-color: rgb(224, 224, 224);"':'';?>>
+                  </th>
         </tr>
       <?php  } } ?>
         <tr class="noHover">
@@ -71,7 +72,7 @@ include ("../../../inc/includes.php");
          <?php 
             if(!empty($numero_lacre)){
             ?>
-            <!--<input type="submit" value="ValidarLacre" name="validar" class="submit">-->
+            
             <input type="submit" value="Salvar" name="salvar" class="submit">
          <?php 
             }else{
@@ -82,9 +83,11 @@ include ("../../../inc/includes.php");
             ?>
         </th>
     </tr>
+
         </tbody>
         </table>
    </form>
+      
    <?php
    if (isset($_POST["cadastro"]) || isset($_POST["salvar"])) {
       $username =  $_SESSION['glpiname'];
@@ -186,13 +189,36 @@ include ("../../../inc/includes.php");
       
       /*Lacre*/
       foreach($_POST['acao_lacre'] as $computer_id=>$acao){
+        
          if($acao == "validar"){
-            if ($cont > 0) {                
+          
+                           
                $verifica_lacre = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = '".$computer_id."' AND lacre_number = '".$data[$computer_id]."'");
                $cont_lacre = ($verifica_lacre->num_rows);
                if ($cont_lacre > 0) {
-                  foreach($verifica_lacre as $registro_atual){   
-                     $hystori = "
+                  foreach($verifica_lacre as $registro_atual){  
+
+                     
+                     
+                     if ( !is_numeric($registro_atual['lacre_number']) ) {
+                 
+               
+                        $lacre_missing["digito"] = 'O número do lacre deve conter apenas números';
+                        $message = sprintf(__('Por favor corrija: %s'),
+                        implode(", ", $lacre_missing));
+                        Session::addMessageAfterRedirect($message, false, ERROR);
+                        Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
+                       
+                    } elseif (strlen($value) != 7 ) {
+                     # igual a sete
+                     $lacre_missing["digito"] = 'O número do lacre deve conter 7 númerais';
+                     $message = sprintf(__('Por favor corrija: %s'),
+                     implode(", ", $lacre_missing));
+                     Session::addMessageAfterRedirect($message, false, ERROR);
+                     Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
+                     
+                 }  else {
+                  $hystori = "
                            UPDATE glpi_computer_lacre_hystori 
                            SET status = 1,
                            username = '$username',
@@ -200,7 +226,8 @@ include ("../../../inc/includes.php");
                            data_alteracao = '$today' ,
                            WHERE id=".$registro_atual['id'];
                      $DB->query($hystori);
-                     $hystori = "
+
+                  $hystori = "
                         INSERT INTO glpi_computer_lacre_hystori SET
                         computer_id = '".$registro_atual['computer_id']."',
                         lacre_number = '".$registro_atual['lacre_number']."',
@@ -211,6 +238,8 @@ include ("../../../inc/includes.php");
                         data_alteracao = '$today'
                         ";
                         $DB->query($hystori);
+                 }
+                     
                   }
                }else{
                   $lacre_missing["nostring"] = 'Lacre diferente do cadastrado';
@@ -220,8 +249,8 @@ include ("../../../inc/includes.php");
                   Html::redirect($CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$id_ticket);
                }
             
-            }
-            Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");         
+            
+           // Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");         
          }
          else if($acao == "alterar"){
             if ($cont > 0) { 
@@ -264,18 +293,20 @@ include ("../../../inc/includes.php");
                }          
                
             }
-            Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");
+            // Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");
          }
-      
+         
       }
-                  
+          Html::redirect("{$CFG_GLPI['root_doc']}/front/ticket.form.php?id=$id_ticket");   
                                
     }
    }
 
 ?>
- <script type="text/javascript">
+  <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+    <script type="text/javascript">
 		$( ".acao_lacre" ).click(function() {
+        
 			if($(this).val() === 'validar'){
 				$(this).parent().parent().find('.numero_lacre').attr('readonly', true);
 				$(this).parent().parent().find('.numero_lacre').css('background-color', '#e0e0e0');
@@ -284,6 +315,16 @@ include ("../../../inc/includes.php");
 				$(this).parent().parent().find('.numero_lacre').css('background-color', 'field');
 			}
 		});
+		$( "form" ).validate({
+			messages: {
+				"numero_lacre[]": {
+					required: "Este campo é obrigatório.",
+					maxlength: "Digite não mais do que {0} caracteres.",
+					minlength: "Por favor, insira pelo menos {0} caracteres."
+				}
+			}
+		});
+	</script>
 	</script>
 
 
