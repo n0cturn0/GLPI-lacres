@@ -12,34 +12,34 @@ class PluginPsglacreMaketab extends CommonDBTM
 
     function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
-       switch ($item::getType()) {
-            case Computer::getType():
-            return 'Lacre do computador';
-            break;
+        switch ($item::getType()) {
+        case Computer::getType():
+        return 'Lacre do computador';
+        break;
        }
-            return '';
+        return '';
     }
 
     static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
     {
-       switch ($item::getType()) {
-            case Computer::getType():
-            self::displayTab($item);
-            break;
+        switch ($item::getType()) {
+        case Computer::getType():
+        self::displayTab($item);
+        break;
        }
-            return true;
+        return true;
     }
 
     
    
     static function displayTab($item)
    {
-    global $CFG_GLPI;
-    global $DB;
+        global $CFG_GLPI;
+        global $DB;
 
-    $computador = $item->getID();
-    $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = $computador");
-    $cont = ($result->num_rows);
+        $computador = $item->getID();
+        $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = $computador");
+        $cont = ($result->num_rows);
    
         echo '<br><br><hr>';
         echo '<h2>Históricos das alterações do lacre deste dispositivo</h2>';
@@ -53,7 +53,7 @@ class PluginPsglacreMaketab extends CommonDBTM
         echo '</th>
         </tr>
         
-    </tr>
+        </tr>
         </tbody>
         </table>';
 
@@ -63,53 +63,39 @@ class PluginPsglacreMaketab extends CommonDBTM
         
         foreach ($result as $key => $value) 
         {
-            switch ($value['status'] ) {
-                case 1:
-                    $msg = "Computador com o ID ". $value['computer_id']. " Foi LACRADO pela primeira vez, com o lacre número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
-                    break;
-                case 2:
-                    $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE VALIDADO mantendo o número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
-                break;
-                case 3:
-                     $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE SUBSTITUÍDO pelo de  número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
-                    default:
-                
-                    # code...
-                    break;
-            }
+        switch ($value['status'] ) {
+        case 1:
+        $msg = "Computador com o ID ". $value['computer_id']. " Foi LACRADO pela primeira vez, com o lacre número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
+        break;
+        case 2:
+        $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE VALIDADO mantendo o número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+        break;
+        case 3:
+        $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE SUBSTITUÍDO pelo de  número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+        default:
+        # code...
+        break;
+        }
 
-           
-            echo '
+        echo '
         <tbody>
         <tr class="noHover">
-            <th colspan="8">';
-            echo $msg;
+        <th colspan="8">';
+        echo $msg;
         }
-    }
-          echo  '</th>
+        }
+        echo  '</th>
         </tr>
-        
-    </tr>
+        </tr>
         </tbody>
         </table>';
-     
-      
-     
-      
-       
-   }
+        
+        }
    
  
-   public static function getConfig()
-   {
-       if (count(self::$config)) {
-           return self::$config;
-       } 
-   }
-
-
-
-
-
+        public static function getConfig()
+        {
+        if (count(self::$config)) { return self::$config; } 
+        }
   
-}
+        }
