@@ -49,7 +49,7 @@ class Item_Ticket extends CommonDBRelation{
    // From CommonDBRelation
    static public $itemtype_1          = 'Ticket';
    static public $items_id_1          = 'tickets_id';
-
+   
    static public $itemtype_2          = 'itemtype';
    static public $items_id_2          = 'items_id';
    static public $checkItem_2_Rights  = self::HAVE_VIEW_RIGHT_ON_ITEM;
@@ -368,33 +368,34 @@ class Item_Ticket extends CommonDBRelation{
           $rowcount=($consultalacre->num_rows);
          
           //Se não encontrar lacres
-          if($rowcount == 0) {
-            
-            echo "<br><a href='".$CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$ticket_id."' class='vsubmit' style='margin-top: 10px;'>"._sx('button', 'L A C R E')."</a>";
-            echo '<br>';
-            echo "<p id='label_lacre'>Lacre(s) não validados</p><input id='validar_lacre' type='checkbox' style='display:none'>";
+         
+         if($rowcount == 0) {
+           
+           
+        
+         $plugin = new Plugin();
+         if ( $plugin->isActivated('psglacre')){
+         echo "<br><a href='".$CFG_GLPI["root_doc"]."/plugins/psglacre/front/maketab.form.php?ticket_id=".$ticket_id."' class='vsubmit' style='margin-top: 10px;'>"._sx('button', 'L A C R E')."</a>";
+         echo '<br>';
+         echo "<p id='label_lacre'>Lacre(s) não validados</p><input id='validar_lacre' type='checkbox' style='display:none'>";
+         }   
          } else {
-            echo "<br>";
-            echo "<input type='checkbox' checked name='lacre' id='lacre'>$rowcount Lacre(s) validado(s)";
-            
-          } 
-          }
+         echo "<br>";
+         echo "<input type='checkbox' checked name='lacre' id='lacre'>$rowcount Lacre(s) validado(s)";   
+         } 
+         }
           
          
 
 
 
          } else {
-            //Regra para quando não for do tipo computador
-            // echo '<';
-            // exit('Regra para quando não for do tipo computador');
+         //Regra para quando não for do tipo computador
+         // echo '<';
+         // exit('Regra para quando não for do tipo computador');
+         //FIM Regra para quando não for do tipo computador
 
-
-           
-
-            //FIM Regra para quando não for do tipo computador
-
-         }
+      }
         
          }
          //Fim do Lacre

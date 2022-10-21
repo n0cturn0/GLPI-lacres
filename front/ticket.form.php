@@ -114,10 +114,7 @@ if (isset($_POST["add"])) {
     
       
    } else {
-
-
-      #Sem regras de lacre
-      
+      #Sem regras de lacre 
    }
 
 

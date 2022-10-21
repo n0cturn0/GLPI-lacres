@@ -7,8 +7,10 @@ function plugin_init_psglacre() {
  
     //required!
      Plugin::registerClass('PluginPsglacreMaketab', ['addtabon' => [ 'Computer' ]]);
-     $PLUGIN_HOOKS['add_javascript']['psglacre'][] = 'js/scripts.js.php';
-    $PLUGIN_HOOKS['csrf_compliant']['psglacre'] = true;
+      $PLUGIN_HOOKS['add_javascript']['psglacre'][] = 'js/scripts.js.php';
+      $PLUGIN_HOOKS['csrf_compliant']['psglacre'] = true;
+      
+  
    //   $PLUGIN_HOOKS['config_page']['psglacre'] = 'front/config.form.php';
 
    

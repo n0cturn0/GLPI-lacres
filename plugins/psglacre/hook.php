@@ -7,6 +7,7 @@
 function plugin_psglacre_install() {
    //do some stuff like instanciating databases, default values, ...
    // return true;
+  
    global $DB;
    $DB->query("
    CREATE TABLE `glpi_computer_lacre_hystori` (
@@ -40,5 +41,6 @@ function plugin_psglacre_install() {
  */
 function plugin_psglacre_uninstall() {
    //to some stuff, like removing tables, generated files, ...
+
    return true;
 }
