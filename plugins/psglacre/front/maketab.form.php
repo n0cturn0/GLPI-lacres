@@ -29,6 +29,8 @@ echo "<form id='formLacre' action='".$CFG_GLPI["root_doc"]."/plugins/psglacre/fr
                   foreach($consulta_lacre as $t){
                      $numero_lacre = $t['lacre_number'];
                   }
+               } else {
+                  $numero_lacre = '';
                }
          ?>
             <tr class="noHover">
@@ -215,32 +217,30 @@ echo "<form id='formLacre' action='".$CFG_GLPI["root_doc"]."/plugins/psglacre/fr
                      }
                   }
                }else if($acao == "alterar"){
-                  foreach ($data as $key => $value) {
-                     $hystori = "
-                     UPDATE glpi_computer_lacre_hystori 
-                     SET status = 3,
-                     username = '$username',
-                     user_id_alter = '$userid',
-                     data_alteracao = '$today' ,
-                     WHERE 
-                     computer_id='".$computer_id."'
-                     AND lacre_number = '".$value."'
-                     AND status=1
-                     AND id_ticket='".$id_ticket."'";    
-                     $DB->query($hystori);
+                  $hystori = "
+                  UPDATE glpi_computer_lacre_hystori 
+                  SET status = 3,
+                  username = '$username',
+                  user_id_alter = '$userid',
+                  data_alteracao = '$today' ,
+                  WHERE 
+                  computer_id='".$computer_id."'
+                  AND lacre_number = '".$data[$computer_id]."'
+                  AND status=1
+                  AND id_ticket='".$id_ticket."'";    
+                  $DB->query($hystori);
 
-                     $hystori = "
-                     INSERT INTO glpi_computer_lacre_hystori SET
-                     computer_id = '".$computer_id."',
-                     lacre_number = '".$value."',
-                     status = 3,
-                     username = '$username',
-                     user_id_alter = '$userid',
-                     id_ticket = $id_ticket,
-                     data_alteracao = '$today'
-                     ";
-                     $DB->query($hystori);                                          
-                  } 
+                  $hystori = "
+                  INSERT INTO glpi_computer_lacre_hystori SET
+                  computer_id = '".$computer_id."',
+                  lacre_number = '".$data[$computer_id]."',
+                  status = 3,
+                  username = '$username',
+                  user_id_alter = '$userid',
+                  id_ticket = $id_ticket,
+                  data_alteracao = '$today'
+                  ";
+                  $DB->query($hystori);                                            
                }
             }
          }
