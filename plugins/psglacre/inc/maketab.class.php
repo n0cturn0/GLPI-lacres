@@ -38,7 +38,9 @@ class PluginPsglacreMaketab extends CommonDBTM
         global $DB;
 
         $computador = $item->getID();
-        $result = $DB->query("select * from glpi_computer_lacre_hystori where computer_id = $computador");
+        $result = $DB->query("SELECT *, glpi_computers.otherserial FROM glpi_computer_lacre_hystori
+                    INNER JOIN glpi_computers ON
+                            glpi_computers.id = glpi_computer_lacre_hystori.computer_id where computer_id = $computador");
         $cont = ($result->num_rows);
    
         echo '<br><br><hr>';
@@ -60,18 +62,30 @@ class PluginPsglacreMaketab extends CommonDBTM
         }  else {
 
 
-        
+        $color = '#FF0000';
+        $lcolor='#00008B';
         foreach ($result as $key => $value) 
         {
         switch ($value['status'] ) {
         case 1:
-        $msg = "Computador com o ID ". $value['computer_id']. " Foi LACRADO pela primeira vez, com o lacre número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
+            if (empty($value['otherserial'])){
+                $msg = "Computador <font color='".$color."'>sem número de inventário encontrado.</font> Foi <b><n>lacrado<n></b> pela primeira vez, com o lacre <font color='".$lcolor."'>número: "  . $value['lacre_number'] . "</font> em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
+            } else {
+                $msg = "Computador com inventário número: ". $value['otherserial']. " Foi LACRADO pela primeira vez, com o lacre <font color='".$lcolor."'>número :"  . $value['lacre_number'] . "</font> em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
+            }
+       
         break;
         case 2:
-        $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE VALIDADO mantendo o número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+            if (empty($value['otherserial'])){
+                $msg = "Computador <font color='".$color."'>sem número de inventário encontrado.</font>Teve seu lacre <b>validado</b> mantendo o <font color='".$lcolor."'>número :"  . $value['lacre_number'] . "</font> em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username'];
+            }
+        $msg = "Computador com o inventário ". $value['otherserial']. " Teve seu lacre validado mantendo o <font color='".$lcolor."'> número :"  . $value['lacre_number'] . "</font> em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
         break;
         case 3:
-        $msg = "Computador com o ID ". $value['computer_id']. " Teve seu LACRE SUBSTITUÍDO pelo de  número :"  . $value['lacre_number'] . " em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+            if (empty($value['otherserial'])){
+                $msg = "Computador <font color='".$color."'>sem número de invetário encontrador.</font>  Teve seu lacre substituído pelo de <font color='".$lcolor."'> número :"  . $value['lacre_number'] . "</font> em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
+            }
+        $msg = "Computador com o inventário ". $value['otherserial']. " Teve seu lacre substituído pelo de <font color='".$lcolor."'> número :"  . $value['lacre_number'] . "</font> em: " . $value['data_alteracao'] .  " pelo usuário " . $value['username']; 
         default:
         # code...
         break;
